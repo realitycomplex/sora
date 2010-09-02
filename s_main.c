@@ -83,12 +83,13 @@ static void render(float percentWithinTick){
 
   fZ = 100.0f;
   bZ = -100.0f;
-
+  
   // Save the matrix state and do the rotations
   glPushMatrix();
-  glTranslatef(g_resources.xMove, g_resources.yMove, g_resources.zMove);
-  glRotatef(g_resources.xRot, 1.0f, 0.0f, 0.0f);
-  glRotatef(g_resources.yRot, 0.0f, 1.0f, 0.0f);
+  s_CameraSet(&g_resources.camera);
+  //glTranslatef(g_resources.xMove, g_resources.yMove, g_resources.zMove);
+  //glRotatef(g_resources.xRot, 1.0f, 0.0f, 0.0f);
+  //glRotatef(g_resources.yRot, 0.0f, 1.0f, 0.0f);
 
   // Set material color, Red
   glColor3f(1.0f, 0.0f, 0.0f);
@@ -245,7 +246,7 @@ int main(int argc, char* argv[]){
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
   //limit framerate
-  //SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
+  SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
   
   screen = SDL_SetVideoMode( 800, 600, 16, SDL_OPENGL );
   if ( !screen ) {
@@ -256,7 +257,6 @@ int main(int argc, char* argv[]){
   //init
   //init game resources
   g_InitResources();
-  
   
   //init OpenGL
   init_gl_state();
@@ -282,6 +282,7 @@ int main(int argc, char* argv[]){
     float percentWithinTick = fminf(1.f, (float)(time1 - time0)/TICK_TIME);
     //printf("percentWithinTick: %f\n", percentWithinTick);
     //GameDrawWithInterpolation(percentWithinTick);
+    s_CameraCompute(&g_resources.camera, percentWithinTick);
     render(percentWithinTick);
 
     //for testing fps

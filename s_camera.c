@@ -87,7 +87,7 @@ void s_CameraSet(s_camera_t *camera){
 	matrix[15] = camera->matrix[15];
 
 	glMultMatrixd(matrix);
-	glTranslatef(-camera->pos[0], -camera->pos[1], -camera->pos[2]);
+	glTranslatef(camera->pos[0], camera->pos[1], camera->pos[2]);
 	
   return;
 }

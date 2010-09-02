@@ -1,8 +1,10 @@
+#include <math.h>
 #include "SDL/SDL.h"
 #include "SDL/SDL_opengl.h"
 
 #include "g_game.h"
 #include "s_camera.h"
+#include "s_shared.h"
 #include "sora.h"
 
 //game resources
@@ -37,7 +39,6 @@ void g_Ticker(){
 void g_IndependentTickRun(){
   //gather user input and do housekeeping
   SDL_Event event;
-  Uint16 mousestate[4] = {0, 0, 0, 0};
   
   while ( SDL_PollEvent(&event) ) {
 	  switch(event.type){
@@ -47,10 +48,10 @@ void g_IndependentTickRun(){
   		  g_resources.keystate = SDL_GetKeyState(NULL);
   			break;
   		case SDL_MOUSEMOTION:
+  		  g_resources.mousestate[2] = event.motion.x - g_resources.mousestate[0];
+        g_resources.mousestate[3] = event.motion.y - g_resources.mousestate[1];
         g_resources.mousestate[0] = event.motion.x;
         g_resources.mousestate[1] = event.motion.y;
-        g_resources.mousestate[2] = event.motion.xrel;
-        g_resources.mousestate[3] = event.motion.yrel;
         break;
   		case SDL_QUIT:
         g_resources.gameDone = 1;
@@ -72,25 +73,30 @@ void g_HandleKeyboard(Uint8 *keystate){
   
   if(keystate[SDLK_w]){
     g_resources.zMove += 5.0f;
+    g_resources.camera.pos[2] += 5.0f;
   }
   
   if(keystate[SDLK_s]){
     g_resources.zMove -= 5.0f;
+    g_resources.camera.pos[2] -= 5.0f;
   }
   
   if(keystate[SDLK_a]){
     g_resources.xMove += 5.0f;
+    g_resources.camera.pos[0] += 5.0f;
   }
   
   if(keystate[SDLK_d]){
     g_resources.xMove -= 5.0f;
+    g_resources.camera.pos[0] -= 5.0f;
   }
-  
+    
   return;
 }
 
 //Respond to mouse input
-void g_HandleMouse(Uint16 *mousestate){
+void g_HandleMouse(int *mousestate){
+  /*
   GLfloat w = (GLfloat)g_resources.videoInfo->current_w;
   GLfloat h = (GLfloat)g_resources.videoInfo->current_h;
   g_resources.xRot = -(GLfloat)mousestate[1];
@@ -100,7 +106,32 @@ void g_HandleMouse(Uint16 *mousestate){
   g_resources.yRot = (GLfloat)((int)g_resources.yRot % 360);
 
   printf("w: %f; h: %f; mx: %i; my: %i; xRot: %f; yRot: %f\n", w, h, mousestate[0], mousestate[1], g_resources.xRot, g_resources.yRot);
-
+  */
+  float x, y, z;
+	
+  printf("x: %i; y: %i; xRel: %i; yRel: %i\n", mousestate[0], mousestate[1], mousestate[2], mousestate[3]);
+	
+  g_resources.camera.matrix[4] = 0;
+  g_resources.camera.matrix[5] = 1;
+  g_resources.camera.matrix[6] = 0;
+  g_resources.camera.pitch += mousestate[3];
+  g_resources.camera.jaw += -mousestate[2];
+  g_resources.camera.jaw = (float)((int)g_resources.camera.jaw % 360);
+  g_resources.camera.pitch = (float)((int)g_resources.camera.pitch % 360);
+  /*
+  if(g_resources.camera.pitch > M_PI * 0.499)
+    g_resources.camera.pitch = M_PI * 0.499;
+  if(g_resources.camera.pitch < -M_PI * 0.499)
+    g_resources.camera.pitch = -M_PI * 0.499;
+  */
+  y = cos(g_resources.camera.pitch * M_PI / 180);
+  g_resources.camera.matrix[8] = sin(g_resources.camera.jaw * M_PI / 180) * y;
+  g_resources.camera.matrix[9] = sin(g_resources.camera.pitch) ;
+  g_resources.camera.matrix[10] = cos(g_resources.camera.jaw * M_PI / 180) * y;
+  
+  s_ComputeMatrix(g_resources.camera.matrix);
+  
+  printf("jaw: %f; pitch: %f\n", g_resources.camera.jaw, g_resources.camera.pitch);
   
   return;
 }

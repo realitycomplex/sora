@@ -16,7 +16,7 @@ typedef struct {
   Uint8 *keystate;
   
   //mouse movement state
-  Uint16 mousestate[4];
+  int mousestate[4];
   
   //main camera
   s_camera_t camera;
@@ -41,8 +41,6 @@ typedef struct {
 extern g_resources_t g_resources;
 
 
-
-
 //function prototypes
 void g_InitResources(void);
 
@@ -53,6 +51,6 @@ void g_IndependentTickRun(void);
 
 void g_HandleKeyboard(Uint8 *keystate);
 
-void g_HandleMouse(Uint16 *mousestate);
+void g_HandleMouse(int *mousestate);
 
 #endif
