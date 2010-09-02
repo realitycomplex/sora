@@ -1,0 +1,42 @@
+Game logic
+   Player update
+      Sense Player input      (chapter 5)
+      Compute restrictions    (chapter 22)
+      Update player state
+   World update               (chapters 6 to 9)
+      Passive elements        (chapter 4, spatial index)
+         Pre-select active zone for engine use
+      Logic-based elements
+         Sort according to relevance
+         Execute control mechanism
+         Update state
+      AI based elements
+         Sort according to relevance
+         Sense internal state and goals
+         Sense restrictions
+         Decision engine
+         Update world
+End
+
+Presentation
+   World presentation        (chapters 11 to 14, 17 to 21)
+      Select visible subset  (graphics)
+         Clip
+         Cull
+         Occlude
+      Select resolution
+      Pack geometry
+      Render world geometry
+      Select audible sound sources (sound)
+      Pack audio data
+      Send to audio hardware
+   NPC presentation          (chapter 15)
+      Select visible subset
+      Animate
+      Pack
+      Render NPC data
+   Player presentation (chapter 15)
+      Animate
+      Pack
+      Render
+End
