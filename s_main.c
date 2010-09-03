@@ -258,6 +258,10 @@ int main(int argc, char* argv[]){
   //init game resources
   g_InitResources();
   
+  SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
+  SDL_WarpMouse(400, 300);
+  SDL_EventState(SDL_MOUSEMOTION, SDL_ENABLE);
+  
   //init OpenGL
   init_gl_state();
 

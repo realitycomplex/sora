@@ -11,8 +11,15 @@
 g_resources_t g_resources;
 
 void g_InitResources(){
+  //get video info
   g_resources.videoInfo = SDL_GetVideoInfo();
+  
+  //setup mouse and keyboard states
+  SDL_PumpEvents();
   g_resources.keystate = SDL_GetKeyState(NULL);
+  SDL_GetMouseState(&g_resources.mousestate[0], &g_resources.mousestate[1]);
+  g_resources.mousestate[2] = 0;
+  g_resources.mousestate[3] = 0;
   g_resources.fovy = 60.0f;
   g_resources.xMove = 0.0f;
   g_resources.yMove = 0.0f;
@@ -114,8 +121,10 @@ void g_HandleMouse(int *mousestate){
   g_resources.camera.matrix[4] = 0;
   g_resources.camera.matrix[5] = 1;
   g_resources.camera.matrix[6] = 0;
-  g_resources.camera.pitch += mousestate[3];
-  g_resources.camera.jaw += -mousestate[2];
+  g_resources.camera.pitch += mousestate[3] * 0.5f;
+  g_resources.camera.jaw += -mousestate[2] * 0.5f;
+  //reset mouse relative position
+  mousestate[2] = mousestate[3] = 0;
   g_resources.camera.jaw = (float)((int)g_resources.camera.jaw % 360);
   g_resources.camera.pitch = (float)((int)g_resources.camera.pitch % 360);
   /*
@@ -126,7 +135,7 @@ void g_HandleMouse(int *mousestate){
   */
   y = cos(g_resources.camera.pitch * M_PI / 180);
   g_resources.camera.matrix[8] = sin(g_resources.camera.jaw * M_PI / 180) * y;
-  g_resources.camera.matrix[9] = sin(g_resources.camera.pitch) ;
+  //g_resources.camera.matrix[9] = sin(g_resources.camera.pitch) ;
   g_resources.camera.matrix[10] = cos(g_resources.camera.jaw * M_PI / 180) * y;
   
   s_ComputeMatrix(g_resources.camera.matrix);
