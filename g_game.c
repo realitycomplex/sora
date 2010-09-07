@@ -4,7 +4,7 @@
 
 #include "g_game.h"
 #include "s_camera.h"
-#include "s_shared.h"
+#include "common/math3d.h"
 #include "sora.h"
 
 //game resources
@@ -74,25 +74,29 @@ void g_IndependentTickRun(){
 
 // Respond to keyboard input
 void g_HandleKeyboard(Uint8 *keystate){
-    
+  //quit game
   if(keystate[SDLK_q])
     g_resources.gameDone = 1;
   
+  //move forward
   if(keystate[SDLK_w]){
     g_resources.zMove += 5.0f;
     g_resources.camera.pos[2] += 5.0f;
   }
   
+  //move backward
   if(keystate[SDLK_s]){
     g_resources.zMove -= 5.0f;
     g_resources.camera.pos[2] -= 5.0f;
   }
   
+  //strafe left
   if(keystate[SDLK_a]){
     g_resources.xMove += 5.0f;
     g_resources.camera.pos[0] += 5.0f;
   }
   
+  //strafe right
   if(keystate[SDLK_d]){
     g_resources.xMove -= 5.0f;
     g_resources.camera.pos[0] -= 5.0f;
@@ -104,43 +108,38 @@ void g_HandleKeyboard(Uint8 *keystate){
 //Respond to mouse input
 void g_HandleMouse(int *mousestate){
   /*
-  GLfloat w = (GLfloat)g_resources.videoInfo->current_w;
-  GLfloat h = (GLfloat)g_resources.videoInfo->current_h;
-  g_resources.xRot = -(GLfloat)mousestate[1];
-  g_resources.yRot = (GLfloat)mousestate[0];
-  
-  g_resources.xRot = (GLfloat)((int)g_resources.xRot % 360);
-  g_resources.yRot = (GLfloat)((int)g_resources.yRot % 360);
-
-  printf("w: %f; h: %f; mx: %i; my: %i; xRot: %f; yRot: %f\n", w, h, mousestate[0], mousestate[1], g_resources.xRot, g_resources.yRot);
+  //This does not work well and is buggy.
+  //The whole "camera" system needs to be re-worked
   */
-  float x, y, z;
+  float y;
 	
+	//DEBUG START
   printf("x: %i; y: %i; xRel: %i; yRel: %i\n", mousestate[0], mousestate[1], mousestate[2], mousestate[3]);
+	//DEBUG END
 	
   g_resources.camera.matrix[4] = 0;
   g_resources.camera.matrix[5] = 1;
   g_resources.camera.matrix[6] = 0;
   g_resources.camera.pitch += mousestate[3] * 0.5f;
   g_resources.camera.jaw += -mousestate[2] * 0.5f;
+
   //reset mouse relative position
   mousestate[2] = mousestate[3] = 0;
+  
+  //"convert" to degrees
   g_resources.camera.jaw = (float)((int)g_resources.camera.jaw % 360);
   g_resources.camera.pitch = (float)((int)g_resources.camera.pitch % 360);
-  /*
-  if(g_resources.camera.pitch > M_PI * 0.499)
-    g_resources.camera.pitch = M_PI * 0.499;
-  if(g_resources.camera.pitch < -M_PI * 0.499)
-    g_resources.camera.pitch = -M_PI * 0.499;
-  */
+
   y = cos(g_resources.camera.pitch * M_PI / 180);
   g_resources.camera.matrix[8] = sin(g_resources.camera.jaw * M_PI / 180) * y;
-  //g_resources.camera.matrix[9] = sin(g_resources.camera.pitch) ;
+  //g_resources.camera.matrix[9] = sin(g_resources.camera.pitch);
   g_resources.camera.matrix[10] = cos(g_resources.camera.jaw * M_PI / 180) * y;
   
   s_ComputeMatrix(g_resources.camera.matrix);
   
+  //DEBUG START
   printf("jaw: %f; pitch: %f\n", g_resources.camera.jaw, g_resources.camera.pitch);
+  //DEBUG END
   
   return;
 }
