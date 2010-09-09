@@ -7,6 +7,7 @@ set (
    s_debug.c
    s_camera.c
    g_game.c
+   common/math3d.c
 )
 
 Find_Package ( SDL REQUIRED )

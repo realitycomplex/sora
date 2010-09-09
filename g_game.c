@@ -10,7 +10,7 @@
 //game resources
 g_resources_t g_resources;
 
-void g_InitResources(){
+void game_init_resources(){
   //get video info
   g_resources.videoInfo = SDL_GetVideoInfo();
   
@@ -33,17 +33,17 @@ void g_InitResources(){
   return;
 }
 
-void g_Ticker(){
+void game_ticker(){
   //update game logic here
   //
-  //handle keyboard input (updated in g_IndependentTickRun)
-  g_HandleKeyboard(g_resources.keystate);
-  g_HandleMouse(g_resources.mousestate);
+  //handle keyboard input (updated in game_independent_ticker)
+  game_handle_keyboard(g_resources.keystate);
+  game_handle_mouse(g_resources.mousestate);
   
   return;
 }
 
-void g_IndependentTickRun(){
+void game_independent_ticker(){
   //gather user input and do housekeeping
   SDL_Event event;
   
@@ -73,7 +73,7 @@ void g_IndependentTickRun(){
 }
 
 // Respond to keyboard input
-void g_HandleKeyboard(Uint8 *keystate){
+void game_handle_keyboard(Uint8 *keystate){
   //quit game
   if(keystate[SDLK_q])
     g_resources.gameDone = 1;
@@ -106,7 +106,7 @@ void g_HandleKeyboard(Uint8 *keystate){
 }
 
 //Respond to mouse input
-void g_HandleMouse(int *mousestate){
+void game_handle_mouse(int *mousestate){
   /*
   //This does not work well and is buggy.
   //The whole "camera" system needs to be re-worked

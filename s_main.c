@@ -256,7 +256,7 @@ int main(int argc, char* argv[]){
   
   //init
   //init game resources
-  g_InitResources();
+  game_init_resources();
   
   SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
   SDL_WarpMouse(400, 300);
@@ -274,13 +274,13 @@ int main(int argc, char* argv[]){
     frameTime = 0;
     while ((time1 - time0) > TICK_TIME){
       //update game logic
-      g_Ticker();
+      game_ticker();
       time0 += TICK_TIME;
       frameTime += TICK_TIME;
     }
     //gather player input & general housekeeping
-    //g_IndependentTickRun(frameTime); //why frameTime?
-    g_IndependentTickRun();
+    //game_independent_ticker(frameTime); //why frameTime?
+    game_independent_ticker();
     
     // Account for numLoops overflow causing percent > 1.
     float percentWithinTick = fminf(1.f, (float)(time1 - time0)/TICK_TIME);

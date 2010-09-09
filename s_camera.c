@@ -2,7 +2,7 @@
 #include "SDL/SDL_opengl.h"
 
 #include "s_camera.h"
-#include "common/s_shared.h"
+#include "common/math3d.h"
 
 
 void s_CameraCompute(s_camera_t *camera, float deltaTime){

@@ -42,15 +42,15 @@ extern g_resources_t g_resources;
 
 
 //function prototypes
-void g_InitResources(void);
+void game_init_resources(void);
 
-void g_Ticker(void);
+void game_ticker(void);
 
-//void g_IndependentTickRun(Uint32);
-void g_IndependentTickRun(void);
+//void game_independent_ticker(Uint32);
+void game_independent_ticker(void);
 
-void g_HandleKeyboard(Uint8 *keystate);
+void game_handle_keyboard(Uint8 *keystate);
 
-void g_HandleMouse(int *mousestate);
+void game_handle_mouse(int *mousestate);
 
 #endif
