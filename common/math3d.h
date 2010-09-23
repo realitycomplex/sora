@@ -1,3 +1,5 @@
+#include "opengl_structs.h"
+
 #ifndef __MATH3D__
 #define __MATH3D__
 
@@ -24,43 +26,42 @@
 
 // set an epsilon if not set
 #ifndef EPSILON
-#define EPSILON 0.001f
+#define EPSILON 0.00001f
 #endif
 
-// define vector structures for float
-typedef struct {
-	GLfloat x;
-	GLfloat y;
-	GLfloat z;
-} vec3f;
-
 // arithmetic operations
-INLINE vec3f* math3d_vec3f_add(vec3f *dest, const vec3f *v1, const vec3f *v2);
-INLINE vec3f* math3d_vec3f_subtract(vec3f *dest, const vec3f *minuend, const vec3f *subtrahend);
-INLINE vec3f* math3d_vec3f_multiply(vec3f *dest, const vec3f *v, const GLfloat n);
-INLINE vec3f* math3d_vec3f_divide(vec3f *dest, const vec3f *v, const GLfloat n);
-INLINE vec3f* math3d_vec3f_scalar_add(vec3f *dest, const vec3f *v, const GLfloat s);
-INLINE vec3f* math3d_vec3f_scalar_sub(vec3f *dest, const vec3f *v, const GLfloat s);
-INLINE GLfloat math3d_vec3f_dot(const vec3f *a, const vec3f *b);
-INLINE vec3f* math3d_vec3f_cross(vec3f *dest, const vec3f *a, const vec3f *b);
+INLINE vec3f_t* math3d_add_vec3f(vec3f_t *dest, const vec3f_t *v1, const vec3f_t *v2);
+INLINE vec3f_t* math3d_subtract_vec3f(vec3f_t *dest, const vec3f_t *minuend, const vec3f_t *subtrahend);
+INLINE vec3f_t* math3d_multiply_vec3f(vec3f_t *dest, const vec3f_t *v, const GLfloat n);
+INLINE vec3f_t* math3d_divide_vec3f(vec3f_t *dest, const vec3f_t *v, const GLfloat n);
+INLINE vec3f_t* math3d_scalar_add_vec3f(vec3f_t *dest, const vec3f_t *v, const GLfloat s);
+INLINE vec3f_t* math3d_scalar_sub_vec3f(vec3f_t *dest, const vec3f_t *v, const GLfloat s);
+INLINE GLfloat math3d_dot_vec3f(const vec3f_t *a, const vec3f_t *b);
+INLINE vec3f_t* math3d_cross_vec3f(vec3f_t *dest, const vec3f_t *a, const vec3f_t *b);
+
+// miscellaneous arithmetic functions
+INLINE GLfloat math3d_max_2f(GLfloat a, GLfloat b);
+INLINE GLfloat math3d_min_2f(GLfloat a, GLfloat b);
+INLINE GLfloat math3d_abs_f(GLfloat f);
+INLINE GLboolean math3d_equal_2vec3f(const vec3f_t *v1, const vec3f_t *v2);
 
 // unit operations
-INLINE GLfloat math3d_vec3f_length(const vec3f *a);
-INLINE vec3f* math3d_vec3f_normalize(vec3f *a);
-INLINE vec3f* math3d_vec3f_invert(vec3f *dest, const vec3f *v);
-INLINE void math3d_vec3f_print(const vec3f *v);
+INLINE GLfloat math3d_length_vec3f(const vec3f_t *a);
+INLINE vec3f_t* math3d_normalize_vec3f(vec3f_t *a);
+INLINE vec3f_t* math3d_invert_vec3f(vec3f_t *dest, const vec3f_t *v);
+INLINE void math3d_print_vec3f(const vec3f_t *v);
 
 // creation
-INLINE vec3f* math3d_vec3f_copy(vec3f *dest, const vec3f *source);
-INLINE vec3f* math3d_vec3f_random(vec3f *v);
-INLINE vec3f* math3d_vec3f_make3f(vec3f *v, const GLfloat x, const GLfloat y, const GLfloat z);
-INLINE vec3f* math3d_vec3f_make2v(vec3f *v, const vec3f *to, const vec3f *from);
+INLINE vec3f_t* math3d_copy_vec3f(vec3f_t *dest, const vec3f_t *source);
+INLINE vec3f_t* math3d_random_vec3f(vec3f_t *v);
+INLINE vec3f_t* math3d_make3f_vec3f(vec3f_t *v, const GLfloat x, const GLfloat y, const GLfloat z);
+INLINE vec3f_t* math3d_make2v_vec3f(vec3f_t *v, const vec3f_t *to, const vec3f_t *from);
 
 // combination operations
-INLINE GLfloat math3d_vec3f_distance(const vec3f *a, const vec3f *b);
-INLINE double math3d_vec3f_distancesq(vec3f *a, vec3f *b);
-INLINE GLfloat math3d_vec3f_angle(const vec3f *a, const vec3f *b);
-INLINE vec3f* math3d_vec3f_reflect(vec3f *dest, const vec3f *incoming, const vec3f *normal);
+INLINE GLfloat math3d_distance_vec3f(const vec3f_t *a, const vec3f_t *b);
+INLINE double math3d_distancesq_vec3f(vec3f_t *a, vec3f_t *b);
+INLINE GLfloat math3d_angle_vec3f(const vec3f_t *a, const vec3f_t *b);
+INLINE vec3f_t* math3d_reflect_vec3f(vec3f_t *dest, const vec3f_t *incoming, const vec3f_t *normal);
 
 
 
