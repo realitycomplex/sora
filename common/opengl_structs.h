@@ -5,20 +5,24 @@
 // Based on GLM by Nate Robins 1997, 2000 http://www.pobox.com/~nate  (a big thank you!)
 */
 
-// define vector structures for float
-typedef struct vec3f_s{
-	GLfloat x;                  // x component
-	GLfloat y;                  // y component
-	GLfloat z;                  // z component
-} vec3f_t;
-
 // define triangle structure
+/*
+// OLD TRIANGLE
 typedef struct triangle_s{
   GLfloat x, y, z;            // vertex component
   GLfloat nx, ny, nz;         // normal component
   GLfloat s0, t0;             // texcoord0 component
   GLfloat s1, t1;             // texcoord1 component
   GLfloat s2, t2;             // texcoord2 component
+  GLfloat padding[4];
+} triangle_t;
+*/
+
+// NEW TRIANGLE
+typedef struct triangle_s{
+  GLfloat vect[3];            // vertex component
+  GLfloat norm[3];            // normal component
+  GLfloat texc[6]             // texcoord component (s0,t0 ... s2,t2)
   GLfloat padding[4];
 } triangle_t;
 
