@@ -9,8 +9,8 @@ void *fileUtils_file_contents(const char *filename, GLint *length){
     void *buffer;
 
     if (!f) {
-        fprintf(stderr, "Unable to open %s for reading\n", filename);
-        return NULL;
+      fprintf(stderr, "Unable to open %s for reading\n", filename);
+      return NULL;
     }
 
     fseek(f, 0, SEEK_END);
@@ -103,4 +103,18 @@ void *fileUtils_read_tga(const char *filename, int *width, int *height){
     }
 
     return pixels;
+}
+
+// Return the directory given a path
+char* fileUtils_dir_name(char* path) {
+  char* dir;
+  char* s;
+  
+  dir = strdup(path);
+  
+  s = strrchr(dir, '/');
+  if (s) s[1] = '\0';
+  else dir[0] = '\0';
+  
+  return dir;
 }
