@@ -3,8 +3,10 @@
 
 #include <stdio.h>
 #include <math.h>
+#include "common/math3d.h"
 #include "g_game.h"
 #include "s_camera.h"
+#include "common/file_obj_loader.h"
 #include "sora.h"
 
 
@@ -262,9 +264,21 @@ int main(int argc, char* argv[]){
   SDL_WarpMouse(400, 300);
   SDL_EventState(SDL_MOUSEMOTION, SDL_ENABLE);
   
+  //test objLoader
+  model_t* pmodel = NULL;
+  pmodel = objLoader_read_obj_file("soccerball.obj");
+  int i, j;
+  for(i=0; i<pmodel->numtriangles; i++){
+    printf("tri%i: ", i);
+    for(j=0; j<3; j++){
+      printf("%i = %f; ", j, pmodel->triangles[i].vect[j]);
+    }
+    printf("\n");
+  }
+  
   //init OpenGL
   init_gl_state();
-
+  
   //game loop
   Uint32 time0, time1, time2, frameTime;
   

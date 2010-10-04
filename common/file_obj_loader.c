@@ -37,6 +37,24 @@ tri_group_t* objLoader_add_group(model_t* model, char* name) {
   return group;
 }
 
+// Find a material in the model 
+GLuint objLoader_find_material(model_t* model, char* name){
+  GLuint i;
+  
+  /* XXX doing a linear search on a string key'd list is pretty lame,
+  but it works and is fast enough for now. */
+  for (i = 0; i < model->nummaterials; i++) {
+    if (!strcmp(model->materials[i].name, name))
+      return i;
+  }
+  
+  // didn't find the name, so print a warning and return the default material (0).
+  printf("objLoader_find_material():  can't find material \"%s\".\n", name);
+  i = 0;
+    
+  return i;
+}
+
 // Read a wavefront material library file
 static GLvoid objLoader_read_mtl_file(model_t* model, char* name) {
   FILE* file;
@@ -301,8 +319,7 @@ static GLvoid objLoader_first_pass(model_t* model, FILE* file) {
 }
 
 // second pass at a Wavefront OBJ file that reads the data into the model structure
-static GLvoid objLoader_second_pass(GLMmodel* model, FILE* file) 
-{
+static GLvoid objLoader_second_pass(model_t* model, FILE* file) {
   GLuint numvertices;       
   GLuint numnormals;         
   GLuint numtexcoords;     
@@ -360,15 +377,17 @@ static GLvoid objLoader_second_pass(GLMmodel* model, FILE* file)
       case 'u':
         fgets(buf, sizeof(buf), file);
         sscanf(buf, "%s %s", buf, buf);
-        group->material = material = glmFindMaterial(model, buf);
+        group->material = material = objLoader_find_material(model, buf);
         break;
+      
       case 'g':               /* group */
         /* eat up rest of line */
         fgets(buf, sizeof(buf), file);
         buf[strlen(buf)-1] = '\0';  /* nuke '\n' */
-        group = glmFindGroup(model, buf);
+        group = objLoader_find_group(model, buf);
         group->material = material;
         break;
+      
       case 'f':               /* face */
         v = n = t = 0;
         fscanf(file, "%s", buf);
@@ -411,73 +430,74 @@ static GLvoid objLoader_second_pass(GLMmodel* model, FILE* file)
           T(numtriangles).texc[2] = t < 0 ? t + numtexcoords : t;
           T(numtriangles).norm[2] = n < 0 ? n + numnormals : n;
           group->triangles[group->numtriangles++] = numtriangles;
-          //HERE - NOTE: still need to work on logic in creating triangles. this is just organizing the code.
-                    numtriangles++;
-                    while(fscanf(file, "%d/%d/%d", &v, &t, &n) > 0) {
-                        T(numtriangles).vect[0] = T(numtriangles-1).vect[0];
-                        T(numtriangles).texc[0] = T(numtriangles-1).texc[0];
-                        T(numtriangles).norm[0] = T(numtriangles-1).norm[0];
-                        T(numtriangles).vect[1] = T(numtriangles-1).vect[2];
-                        T(numtriangles).texc[1] = T(numtriangles-1).texc[2];
-                        T(numtriangles).norm[1] = T(numtriangles-1).norm[2];
-                        T(numtriangles).vect[2] = v < 0 ? v + numvertices : v;
-                        T(numtriangles).texc[2] = t < 0 ? t + numtexcoords : t;
-                        T(numtriangles).norm[2] = n < 0 ? n + numnormals : n;
-                        group->triangles[group->numtriangles++] = numtriangles;
-                        numtriangles++;
-                    }
-                } else if (sscanf(buf, "%d/%d", &v, &t) == 2) {
-                    /* v/t */
-                    T(numtriangles).vect[0] = v < 0 ? v + numvertices : v;
-                    T(numtriangles).texc[0] = t < 0 ? t + numtexcoords : t;
-                    fscanf(file, "%d/%d", &v, &t);
-                    T(numtriangles).vect[1] = v < 0 ? v + numvertices : v;
-                    T(numtriangles).texc[1] = t < 0 ? t + numtexcoords : t;
-                    fscanf(file, "%d/%d", &v, &t);
-                    T(numtriangles).vect[2] = v < 0 ? v + numvertices : v;
-                    T(numtriangles).texc[2] = t < 0 ? t + numtexcoords : t;
-                    group->triangles[group->numtriangles++] = numtriangles;
-                    numtriangles++;
-                    while(fscanf(file, "%d/%d", &v, &t) > 0) {
-                        T(numtriangles).vect[0] = T(numtriangles-1).vect[0];
-                        T(numtriangles).texc[0] = T(numtriangles-1).texc[0];
-                        T(numtriangles).vect[1] = T(numtriangles-1).vect[2];
-                        T(numtriangles).texc[1] = T(numtriangles-1).texc[2];
-                        T(numtriangles).vect[2] = v < 0 ? v + numvertices : v;
-                        T(numtriangles).texc[2] = t < 0 ? t + numtexcoords : t;
-                        group->triangles[group->numtriangles++] = numtriangles;
-                        numtriangles++;
-                    }
-                } else {
-                    /* v */
-                    sscanf(buf, "%d", &v);
-                    T(numtriangles).vect[0] = v < 0 ? v + numvertices : v;
-                    fscanf(file, "%d", &v);
-                    T(numtriangles).vect[1] = v < 0 ? v + numvertices : v;
-                    fscanf(file, "%d", &v);
-                    T(numtriangles).vect[2] = v < 0 ? v + numvertices : v;
-                    group->triangles[group->numtriangles++] = numtriangles;
-                    numtriangles++;
-                    while(fscanf(file, "%d", &v) > 0) {
-                        T(numtriangles).vect[0] = T(numtriangles-1).vect[0];
-                        T(numtriangles).vect[1] = T(numtriangles-1).vect[2];
-                        T(numtriangles).vect[2] = v < 0 ? v + numvertices : v;
-                        group->triangles[group->numtriangles++] = numtriangles;
-                        numtriangles++;
-                    }
-                }
-                break;
+          numtriangles++;
+          while(fscanf(file, "%d/%d/%d", &v, &t, &n) > 0) {
+            T(numtriangles).vect[0] = T(numtriangles-1).vect[0];
+            T(numtriangles).texc[0] = T(numtriangles-1).texc[0];
+            T(numtriangles).norm[0] = T(numtriangles-1).norm[0];
+            T(numtriangles).vect[1] = T(numtriangles-1).vect[2];
+            T(numtriangles).texc[1] = T(numtriangles-1).texc[2];
+            T(numtriangles).norm[1] = T(numtriangles-1).norm[2];
+            T(numtriangles).vect[2] = v < 0 ? v + numvertices : v;
+            T(numtriangles).texc[2] = t < 0 ? t + numtexcoords : t;
+            T(numtriangles).norm[2] = n < 0 ? n + numnormals : n;
+            group->triangles[group->numtriangles++] = numtriangles;
+            numtriangles++;
+          }
+        } 
+        else if (sscanf(buf, "%d/%d", &v, &t) == 2) {
+          /* v/t */
+          T(numtriangles).vect[0] = v < 0 ? v + numvertices : v;
+          T(numtriangles).texc[0] = t < 0 ? t + numtexcoords : t;
+          fscanf(file, "%d/%d", &v, &t);
+          T(numtriangles).vect[1] = v < 0 ? v + numvertices : v;
+          T(numtriangles).texc[1] = t < 0 ? t + numtexcoords : t;
+          fscanf(file, "%d/%d", &v, &t);
+          T(numtriangles).vect[2] = v < 0 ? v + numvertices : v;
+          T(numtriangles).texc[2] = t < 0 ? t + numtexcoords : t;
+          group->triangles[group->numtriangles++] = numtriangles;
+          numtriangles++;
+          while(fscanf(file, "%d/%d", &v, &t) > 0) {
+            T(numtriangles).vect[0] = T(numtriangles-1).vect[0];
+            T(numtriangles).texc[0] = T(numtriangles-1).texc[0];
+            T(numtriangles).vect[1] = T(numtriangles-1).vect[2];
+            T(numtriangles).texc[1] = T(numtriangles-1).texc[2];
+            T(numtriangles).vect[2] = v < 0 ? v + numvertices : v;
+            T(numtriangles).texc[2] = t < 0 ? t + numtexcoords : t;
+            group->triangles[group->numtriangles++] = numtriangles;
+            numtriangles++;
+          }
+        } 
+        else {
+          /* v */
+          sscanf(buf, "%d", &v);
+          T(numtriangles).vect[0] = v < 0 ? v + numvertices : v;
+          fscanf(file, "%d", &v);
+          T(numtriangles).vect[1] = v < 0 ? v + numvertices : v;
+          fscanf(file, "%d", &v);
+          T(numtriangles).vect[2] = v < 0 ? v + numvertices : v;
+          group->triangles[group->numtriangles++] = numtriangles;
+          numtriangles++;
+          while(fscanf(file, "%d", &v) > 0) {
+            T(numtriangles).vect[0] = T(numtriangles-1).vect[0];
+            T(numtriangles).vect[1] = T(numtriangles-1).vect[2];
+            T(numtriangles).vect[2] = v < 0 ? v + numvertices : v;
+            group->triangles[group->numtriangles++] = numtriangles;
+            numtriangles++;
+          }
+        }
+        break;
                 
-            default:
-                /* eat up rest of line */
-                fgets(buf, sizeof(buf), file);
-                break;
+      default:
+        /* eat up rest of line */
+        fgets(buf, sizeof(buf), file);
+        break;
     }
   }
 }
 
 // Deletes a model_t structure
-GLvoid objLoader_delete_obj_file(model_t* model){
+GLvoid objLoader_delete_obj_file(model_t* model) {
   tri_group_t* group;
   int i;
     
@@ -505,7 +525,7 @@ GLvoid objLoader_delete_obj_file(model_t* model){
 }
 
 // Reads a model description from a Wavefront .OBJ file. Returns a pointer to the created object which should be free'd with objLoader_delete_obj_file().
-model_t* objLoader_read_obj_file(char* filename){
+model_t* objLoader_read_obj_file(char* filename) {
   model_t* model;
   FILE* file;
   
@@ -543,7 +563,7 @@ model_t* objLoader_read_obj_file(char* filename){
 
   // allocate memory
   model->vertices = (GLfloat*)malloc(sizeof(GLfloat) * 3 * (model->numvertices + 1));
-  model->triangles = (tri_group_t*)malloc(sizeof(tri_group_t) * model->numtriangles);
+  model->triangles = (triangle_t*)malloc(sizeof(triangle_t) * model->numtriangles);
   if (model->numnormals) {
     model->normals = (GLfloat*)malloc(sizeof(GLfloat) * 3 * (model->numnormals + 1));
   }
@@ -555,11 +575,252 @@ model_t* objLoader_read_obj_file(char* filename){
   rewind(file);
   
   // read in the data with the 2nd pass
-  //HERE
-  glmSecondPass(model, file);
+  //HERE - NOTE: still need to work on logic in creating triangles. this is just organizing the code.
+  objLoader_second_pass(model, file);
   
   // close the file
   fclose(file);
   
   return model;
+}
+
+// "Unitize" a model by scaling it to fit in a unit cube around the origin.  Returns the scalefactor used
+GLfloat objLoader_unitize_obj(model_t* model) {
+  GLuint i;
+  GLfloat maxx, minx, maxy, miny, maxz, minz;
+  GLfloat cx, cy, cz, w, h, d;
+  GLfloat scale;
+  
+  // get the max/mins
+  maxx = minx = model->vertices[3 + 0];
+  maxy = miny = model->vertices[3 + 1];
+  maxz = minz = model->vertices[3 + 2];
+  for (i = 1; i <= model->numvertices; i++) {
+    if (maxx < model->vertices[3 * i + 0])
+        maxx = model->vertices[3 * i + 0];
+    if (minx > model->vertices[3 * i + 0])
+        minx = model->vertices[3 * i + 0];
+    
+    if (maxy < model->vertices[3 * i + 1])
+        maxy = model->vertices[3 * i + 1];
+    if (miny > model->vertices[3 * i + 1])
+        miny = model->vertices[3 * i + 1];
+    
+    if (maxz < model->vertices[3 * i + 2])
+        maxz = model->vertices[3 * i + 2];
+    if (minz > model->vertices[3 * i + 2])
+        minz = model->vertices[3 * i + 2];
+  }
+    
+  // calculate model width, height, and depth
+  w = math3d_abs_f(maxx) + math3d_abs_f(minx);
+  h = math3d_abs_f(maxy) + math3d_abs_f(miny);
+  d = math3d_abs_f(maxz) + math3d_abs_f(minz);
+    
+  // calculate center of the model
+  cx = (maxx + minx) / 2.0;
+  cy = (maxy + miny) / 2.0;
+  cz = (maxz + minz) / 2.0;
+  
+  // calculate unitizing scale factor
+  scale = 2.0 / math3d_max_2f(math3d_max_2f(w, h), d);
+    
+  // translate around center then scale
+  for (i = 1; i <= model->numvertices; i++) {
+    model->vertices[3 * i + 0] -= cx;
+    model->vertices[3 * i + 1] -= cy;
+    model->vertices[3 * i + 2] -= cz;
+    model->vertices[3 * i + 0] *= scale;
+    model->vertices[3 * i + 1] *= scale;
+    model->vertices[3 * i + 2] *= scale;
+  }
+    
+  return scale;
+}
+
+// Generates facet normals for a model. Assumes a counter-clockwise winding
+GLvoid objLoader_facet_normals(model_t* model) {
+  GLuint  i;
+  GLfloat u[3];
+  GLfloat v[3];
+  
+  // clobber any old facetnormals
+  if (model->facetnorms) free(model->facetnorms);
+    
+  // allocate memory for the new facet normals
+  model->numfacetnorms = model->numtriangles;
+  model->facetnorms = (GLfloat*)malloc(sizeof(GLfloat) * 3 * (model->numfacetnorms + 1));
+  /*
+  //HERE
+  // This doesn't work because I want to change how the "triangle" is created and stored.
+  // Indices were stored and I want to store vertex coordinates (for use with VBOs)  
+  for (i = 0; i < model->numtriangles; i++) {
+    model->triangles[i].findex = i+1;
+    
+    u[0] = model->vertices[3 * T(i).vect[1] + 0] -
+        model->vertices[3 * T(i).vect[0] + 0];
+    u[1] = model->vertices[3 * T(i).vect[1] + 1] -
+        model->vertices[3 * T(i).vect[0] + 1];
+    u[2] = model->vertices[3 * T(i).vect[1] + 2] -
+        model->vertices[3 * T(i).vect[0] + 2];
+    
+    v[0] = model->vertices[3 * T(i).vect[2] + 0] -
+        model->vertices[3 * T(i).vect[0] + 0];
+    v[1] = model->vertices[3 * T(i).vect[2] + 1] -
+        model->vertices[3 * T(i).vect[0] + 1];
+    v[2] = model->vertices[3 * T(i).vect[2] + 2] -
+        model->vertices[3 * T(i).vect[0] + 2];
+    
+    math3d_cross(&model->facetnorms[3 * (i+1)], u, v);
+    math3d_normalize(&model->facetnorms[3 * (i+1)]);
+  }
+  */
+}
+
+// Generates smooth vertex normals for a model. The angle to use depends on the model, but 90 degrees is usually a good start
+GLvoid objLoader_vertex_normals(model_t* model, GLfloat angle) {
+  /*
+  //HERE
+  // This doesn't work because I want to change how the "triangle" is created and stored.
+  // Indices were stored and I want to store vertex coordinates (for use with VBOs)
+  
+  GLMnode* node;
+  GLMnode* tail;
+  GLMnode** members;
+  GLfloat* normals;
+  GLuint numnormals;
+  GLfloat average[3];
+  GLfloat dot, cos_angle;
+  GLuint i, avg;
+    
+  // calculate the cosine of the angle (in degrees)
+  cos_angle = cos(angle * M_PI / 180.0);
+    
+  // nuke any previous normals
+  if (model->normals) free(model->normals);
+    
+  // allocate space for new normals
+  model->numnormals = model->numtriangles * 3; // 3 normals per triangle
+  model->normals = (GLfloat*)malloc(sizeof(GLfloat)* 3* (model->numnormals+1));
+    
+  // allocate a structure that will hold a linked list of triangle indices for each vertex
+  members = (GLMnode**)malloc(sizeof(GLMnode*) * (model->numvertices + 1));
+  for (i = 1; i <= model->numvertices; i++)
+    members[i] = NULL;
+    
+  // for every triangle, create a node for each vertex in it
+  for (i = 0; i < model->numtriangles; i++) {
+    node = (GLMnode*)malloc(sizeof(GLMnode));
+    node->index = i;
+    node->next  = members[T(i).vect[0]];
+    members[T(i).vect[0]] = node;
+  
+    node = (GLMnode*)malloc(sizeof(GLMnode));
+    node->index = i;
+    node->next  = members[T(i).vect[1]];
+    members[T(i).vect[1]] = node;
+  
+    node = (GLMnode*)malloc(sizeof(GLMnode));
+    node->index = i;
+    node->next  = members[T(i).vect[2]];
+    members[T(i).vect[2]] = node;
+  }
+    
+  // calculate the average normal for each vertex
+  numnormals = 1;
+  for (i = 1; i <= model->numvertices; i++) {
+    // calculate an average normal for this vertex by averaging the facet normal of every triangle this vertex is in
+    node = members[i];
+    if (!node) fprintf(stderr, "glmVertexNormals(): vertex w/o a triangle\n");
+    average[0] = 0.0; average[1] = 0.0; average[2] = 0.0;
+    avg = 0;
+        while (node) {
+        // only average if the dot product of the angle between the two
+        // facet normals is greater than the cosine of the threshold
+        // angle -- or, said another way, the angle between the two
+        // facet normals is less than (or equal to) the threshold angle
+            dot = glmDot(&model->facetnorms[3 * T(node->index).findex],
+                &model->facetnorms[3 * T(members[i]->index).findex]);
+            if (dot > cos_angle) {
+                node->averaged = GL_TRUE;
+                average[0] += model->facetnorms[3 * T(node->index).findex + 0];
+                average[1] += model->facetnorms[3 * T(node->index).findex + 1];
+                average[2] += model->facetnorms[3 * T(node->index).findex + 2];
+                avg = 1;            // we averaged at least one normal!
+            } else {
+                node->averaged = GL_FALSE;
+            }
+            node = node->next;
+        }
+        
+        if (avg) {
+            // normalize the averaged normal
+            glmNormalize(average);
+            
+            // add the normal to the vertex normals list
+            model->normals[3 * numnormals + 0] = average[0];
+            model->normals[3 * numnormals + 1] = average[1];
+            model->normals[3 * numnormals + 2] = average[2];
+            avg = numnormals;
+            numnormals++;
+        }
+        
+        // set the normal of this vertex in each triangle it is in
+        node = members[i];
+        while (node) {
+            if (node->averaged) {
+                // if this node was averaged, use the average normal
+                if (T(node->index).vect[0] == i)
+                    T(node->index).norm[0] = avg;
+                else if (T(node->index).vect[1] == i)
+                    T(node->index).norm[1] = avg;
+                else if (T(node->index).vect[2] == i)
+                    T(node->index).norm[2] = avg;
+            } else {
+                // if this node wasn't averaged, use the facet normal
+                model->normals[3 * numnormals + 0] = 
+                    model->facetnorms[3 * T(node->index).findex + 0];
+                model->normals[3 * numnormals + 1] = 
+                    model->facetnorms[3 * T(node->index).findex + 1];
+                model->normals[3 * numnormals + 2] = 
+                    model->facetnorms[3 * T(node->index).findex + 2];
+                if (T(node->index).vect[0] == i)
+                    T(node->index).norm[0] = numnormals;
+                else if (T(node->index).vect[1] == i)
+                    T(node->index).norm[1] = numnormals;
+                else if (T(node->index).vect[2] == i)
+                    T(node->index).norm[2] = numnormals;
+                numnormals++;
+            }
+            node = node->next;
+        }
+    }
+    
+    model->numnormals = numnormals - 1;
+    
+    // free the member information
+    for (i = 1; i <= model->numvertices; i++) {
+        node = members[i];
+        while (node) {
+            tail = node;
+            node = node->next;
+            free(tail);
+        }
+    }
+    free(members);
+    
+    // pack the normals array (we previously allocated the maximum
+    // number of normals that could possibly be created (numtriangles *
+    // 3), so get rid of some of them (usually alot unless none of the
+    // facet normals were averaged))
+    normals = model->normals;
+    model->normals = (GLfloat*)malloc(sizeof(GLfloat)* 3* (model->numnormals+1));
+    for (i = 1; i <= model->numnormals; i++) {
+        model->normals[3 * i + 0] = normals[3 * i + 0];
+        model->normals[3 * i + 1] = normals[3 * i + 1];
+        model->normals[3 * i + 2] = normals[3 * i + 2];
+    }
+    free(normals);
+    
+    */
 }

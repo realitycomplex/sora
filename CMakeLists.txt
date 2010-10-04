@@ -8,6 +8,8 @@ set (
    s_camera.c
    g_game.c
    common/math3d.c
+   common/file_utils.c
+   common/file_obj_loader.c
 )
 
 Find_Package ( SDL REQUIRED )

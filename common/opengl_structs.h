@@ -1,3 +1,5 @@
+#include "SDL/SDL_opengl.h"
+
 #ifndef __OPENGL_STRUCTS__
 #define __OPENGL_STRUCTS__
 
@@ -22,8 +24,9 @@ typedef struct triangle_s{
 typedef struct triangle_s{
   GLfloat vect[3];            // vertex component
   GLfloat norm[3];            // normal component
-  GLfloat texc[6]             // texcoord component (s0,t0 ... s2,t2)
-  GLfloat padding[4];
+  GLfloat texc[6];            // texcoord component (s0,t0 ... s2,t2)
+  GLuint findex;              // index of triangle facet normal
+  GLfloat padding[3];
 } triangle_t;
 
 // define material structure
@@ -42,6 +45,7 @@ typedef struct tri_group_s{
   GLuint numtriangles;        // number of triangles in this group
   GLuint* triangles;          // array of triangle indices
   GLuint material;            // index to material for group 
+  struct tri_group_s* next;   // pointer to next group in model
 } tri_group_t;
 
 // define model structure
@@ -68,7 +72,7 @@ typedef struct model_s{
   material_t* materials;     // array of materials
 
   GLuint numgroups;           // number of groups in model
-  tri_group_t* groups;           // linked list of groups
+  tri_group_t* groups;        // linked list of groups
 
   GLfloat position[3];        // position of the model
 

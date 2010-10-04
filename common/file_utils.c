@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void *fileUtils_file_contents(const char *filename, GLint *length){
+void *fileUtils_file_contents(const char *filename, int *length){
     FILE *f = fopen(filename, "r");
     void *buffer;
 
